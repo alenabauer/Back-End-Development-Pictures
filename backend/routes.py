@@ -35,7 +35,8 @@ def count():
 ######################################################################
 @app.route("/picture", methods=["GET"])
 def get_pictures():
-    pass
+    """ return all pictures """
+    return data
 
 ######################################################################
 # GET A PICTURE
@@ -44,7 +45,13 @@ def get_pictures():
 
 @app.route("/picture/<int:id>", methods=["GET"])
 def get_picture_by_id(id):
-    pass
+    """ return the picture with the given ID"""
+    picture = next((p for p in data if p["id"] == id), None)
+
+    if picture is not None:
+        return jsonify(picture), 200
+    else:
+        return jsonify({"error": "Picture not found"}), 404
 
 
 ######################################################################
@@ -52,7 +59,14 @@ def get_picture_by_id(id):
 ######################################################################
 @app.route("/picture", methods=["POST"])
 def create_picture():
-    pass
+    """ create a new picture object """
+    picture_exists = next((True for p in data if p["id"] == request.json["id"]), False)
+
+    if picture_exists:
+        return jsonify({"Message": "picture with id {} already present".format(request.json["id"])}), 302
+
+    data.append(request.json)
+    return jsonify(request.json), 201
 
 ######################################################################
 # UPDATE A PICTURE
@@ -61,11 +75,25 @@ def create_picture():
 
 @app.route("/picture/<int:id>", methods=["PUT"])
 def update_picture(id):
-    pass
+    """ update a picture object """
+    picture = next((p for p in data if p["id"] == id), None)
+
+    if picture is not None:
+        picture.update(request.json)
+        return jsonify(picture), 200
+    else:
+        return jsonify({"error": "Picture not found"}), 404
 
 ######################################################################
 # DELETE A PICTURE
 ######################################################################
 @app.route("/picture/<int:id>", methods=["DELETE"])
 def delete_picture(id):
-    pass
+    """ delete a picture object """
+    picture = next((p for p in data if p["id"] == id), None)
+
+    if picture is not None:
+        data.remove(picture)
+        return jsonify({}), 204
+    else:
+        return jsonify({"error": "Picture not found"}), 404
